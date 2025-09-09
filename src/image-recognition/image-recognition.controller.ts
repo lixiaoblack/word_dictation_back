@@ -14,7 +14,6 @@ import {
   ApiConsumes,
   ApiBody,
   ApiQuery,
-  ApiParam,
 } from '@nestjs/swagger';
 import { ImageRecognitionService } from './image-recognition.service';
 import { ApiResponse as CustomApiResponse, RecognitionResult } from '../types';
@@ -122,7 +121,7 @@ export class ImageRecognitionController {
     } catch (error) {
       return {
         success: false,
-        error: error.message || '图片识别失败',
+        error: error instanceof Error ? error.message : '图片识别失败',
       };
     }
   }
@@ -189,7 +188,7 @@ export class ImageRecognitionController {
     } catch (error) {
       return {
         success: false,
-        error: error.message || '文本处理失败',
+        error: error instanceof Error ? error.message : '文本处理失败',
       };
     }
   }

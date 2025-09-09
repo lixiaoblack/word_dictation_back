@@ -64,7 +64,11 @@ export class TranslationService {
 
       return result;
     } catch (error) {
-      this.logger.error(`翻译单词 "${word}" 失败:`, error.message);
+      this.logger.error(
+        `翻译单词 "${word}" 失败:`,
+        error instanceof Error ? error.message : String(error),
+      );
+
       // 返回基本信息作为fallback
       return {
         word: word.toLowerCase(),
@@ -116,7 +120,10 @@ export class TranslationService {
           }
         });
       } catch (error) {
-        this.logger.error('批量翻译失败:', error.message);
+        this.logger.error(
+          '批量翻译失败:',
+          error instanceof Error ? error.message : String(error),
+        );
       }
 
       // 添加延迟避免API限流

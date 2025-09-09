@@ -33,7 +33,13 @@ export class DoubaoService {
             content: [
               {
                 type: 'text',
-                text: '请识别图片中的所有英文单词和中文文字，并以纯文本形式返回，不要添加任何解释或格式。',
+                // text: '请识别图片中的所有英文单词和中文文字，并以纯文本形式返回，不要添加任何解释或格式。',
+                text: `请识别图片中的所有，英文单词、中文、音标等信息，以JSON格式返回：
+   - word: 单词原形
+   - phonetic: 音标（英式发音）
+   - translation: 中文翻译
+   - partOfSpeech: 词性（如：名词、动词、形容词等）
+                ，没有的信息默认填充为空，不要添加任何解释或格式。`,
               },
               {
                 type: 'image_url',
@@ -44,7 +50,7 @@ export class DoubaoService {
             ],
           },
         ],
-        max_tokens: 1000,
+        max_tokens: 3200,
         temperature: 0.1,
         thinking: {
           type: 'disabled',
@@ -69,8 +75,13 @@ export class DoubaoService {
 
       throw new Error('豆包API返回数据格式错误');
     } catch (error) {
-      this.logger.error('豆包图片识别失败:', error.message);
-      throw new Error(`豆包图片识别失败: ${error.message}`);
+      this.logger.error(
+        '豆包图片识别失败:',
+        error instanceof Error ? error.message : String(error),
+      );
+      throw new Error(
+        `豆包图片识别失败: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -143,8 +154,13 @@ export class DoubaoService {
 
       throw new Error('豆包API返回数据格式错误');
     } catch (error) {
-      this.logger.error('豆包文本处理失败:', error.message);
-      throw new Error(`豆包文本处理失败: ${error.message}`);
+      this.logger.error(
+        '豆包文本处理失败:',
+        error instanceof Error ? error.message : String(error),
+      );
+      throw new Error(
+        `豆包文本处理失败: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }

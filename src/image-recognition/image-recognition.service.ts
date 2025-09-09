@@ -38,10 +38,19 @@ export class ImageRecognitionService {
 
       this.logger.log(`图片识别完成，识别到文本: ${recognizedText}`);
 
-      // 处理识别到的文本
-      return await this.processText(recognizedText, provider);
+      const arr: WordInfo[] = JSON.parse(recognizedText) as WordInfo[];
+
+      return {
+        originalText: recognizedText,
+        words: arr,
+        provider,
+        confidence: this.calculateConfidence(arr),
+      };
     } catch (error) {
-      this.logger.error('图片识别失败:', error.message);
+      this.logger.error(
+        '图片识别失败:',
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }
@@ -73,7 +82,10 @@ export class ImageRecognitionService {
           this.logger.log(`AI分析成功，找到 ${aiAnalysisResult.length} 个单词`);
         }
       } catch (aiError) {
-        this.logger.warn('AI分析失败，使用传统方法处理:', aiError.message);
+        this.logger.warn(
+          'AI分析失败，使用传统方法处理:',
+          aiError instanceof Error ? aiError.message : String(aiError),
+        );
       }
 
       // 如果AI分析失败或结果为空，使用传统方法
@@ -91,7 +103,10 @@ export class ImageRecognitionService {
         confidence: this.calculateConfidence(processedWords),
       };
     } catch (error) {
-      this.logger.error('文本处理失败:', error.message);
+      this.logger.error(
+        'AI分析失败，使用传统方法处理:',
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }
@@ -112,11 +127,13 @@ export class ImageRecognitionService {
       if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
         cleanResponse = cleanResponse.substring(jsonStart, jsonEnd + 1);
       }
-
-      const parsed = JSON.parse(cleanResponse);
+      const parsed = JSON.parse(cleanResponse) as { words: WordInfo[] };
       return parsed;
     } catch (error) {
-      this.logger.warn('解析AI响应失败:', error.message);
+      this.logger.error(
+        'AI分析失败，使用传统方法处理:',
+        error instanceof Error ? error.message : String(error),
+      );
       return null;
     }
   }
@@ -136,7 +153,11 @@ export class ImageRecognitionService {
 
       return translatedWords;
     } catch (error) {
-      this.logger.error('fallback处理失败:', error.message);
+      this.logger.error(
+        'AI分析失败，使用传统方法处理:',
+        error instanceof Error ? error.message : String(error),
+      );
+
       return [];
     }
   }
@@ -179,7 +200,10 @@ export class ImageRecognitionService {
 
         enhancedWords.push(enhancedWord);
       } catch (error) {
-        this.logger.warn(`增强单词 "${word.word}" 信息失败:`, error.message);
+        this.logger.error(
+          'AI分析失败，使用传统方法处理:',
+          error instanceof Error ? error.message : String(error),
+        );
         // 添加基本信息
         enhancedWords.push({
           ...word,
