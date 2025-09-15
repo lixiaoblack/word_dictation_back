@@ -32,8 +32,10 @@ async function bootstrap() {
   // 全局异常过滤器
   app.useGlobalFilters(new GlobalExceptionFilter());
 
+  const urlPrefix = process.env.URL_PREFIX ?? '';
+
   // 设置全局路由前缀
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix(urlPrefix);
 
   const port = process.env.PORT ?? 3000;
 
