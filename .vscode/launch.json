@@ -1,0 +1,19 @@
+{
+  "type": "node",
+  "request": "launch",
+  "name": "debug nest",
+  "runtimeExecutable": "npm",
+  "args": ["run", "start:dev"],
+  "skipFiles": ["<node_internals>/**"],
+  "console": "integratedTerminal",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run nest",
+      "runtimeExecutable": "nest",
+      "cwd": "${workspaceFolder}",
+      "args": []
+    }
+  ]
+}

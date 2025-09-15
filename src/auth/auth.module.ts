@@ -11,17 +11,16 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthCacheService } from './auth-cache.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { RedisModule } from '../common/redis.module';
 
 @Module({
   imports: [
-    CacheModule.register(),
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -31,6 +30,7 @@ import { UsersService } from '../users/users.service';
       }),
       inject: [ConfigService],
     }),
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthCacheService, UsersService, JwtStrategy],

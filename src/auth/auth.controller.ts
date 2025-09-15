@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -101,5 +102,10 @@ export class AuthController {
   async logout(@CurrentUser() user: User) {
     await this.authService.logout(user.id);
     return { message: '登出成功' };
+  }
+
+  @Get('checkRedis')
+  async checkRedis() {
+    return await this.authService.checkRedis();
   }
 }

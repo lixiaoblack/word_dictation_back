@@ -1,3 +1,12 @@
+/*
+ * @Author: wanglx
+ * @Date: 2025-09-15 18:12:46
+ * @LastEditors: wanglx
+ * @LastEditTime: 2025-09-15 22:44:57
+ * @Description:
+ *
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
+ */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../users/entities/user.entity';
@@ -60,7 +69,6 @@ export class AuthService {
 
     // 将用户信息和token存储到Redis缓存中
     await this.authCacheService.setUserToken(user.id, token);
-    await this.authCacheService.setUserInfo(user.id, user);
 
     return { user, token };
   }
@@ -73,5 +81,25 @@ export class AuthService {
     // 从Redis中移除用户的token和信息
     await this.authCacheService.removeUserToken(userId);
     await this.authCacheService.removeUserInfo(userId);
+  }
+
+  async checkRedis() {
+    try {
+      // 检查一个测试键是否存在
+      const exists = await this.authCacheService.setexists();
+
+      // 检查用户token是否存在
+      const token = await this.authCacheService.getUserToken(9);
+      console.log('[Redis检查] 用户ID为9的令牌:', token);
+
+      // 获取所有键
+      const allKeys = await this.authCacheService.getAllKeys();
+      console.log('[Redis检查] 所有键:', allKeys);
+
+      return { exists, token, allKeys };
+    } catch (error) {
+      console.error('[Redis检查] 错误:', error);
+      return { error: error.message };
+    }
   }
 }

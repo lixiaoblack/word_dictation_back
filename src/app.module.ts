@@ -20,6 +20,8 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
+import { RedisModule } from './common/redis.module';
+import { ExampleModule } from './example/example.module';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { UsersService } from './users/users.service';
     }),
     ImageRecognitionModule,
     AuthModule,
+    RedisModule,
+    ExampleModule,
   ],
   controllers: [AppController, UsersController],
   providers: [AppService, UsersService],
