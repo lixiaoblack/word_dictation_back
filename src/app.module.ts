@@ -16,6 +16,10 @@ import { MulterModule } from '@nestjs/platform-express';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ImageRecognitionModule } from './image-recognition/image-recognition.module';
+import { AuthModule } from './auth/auth.module';
+import { User } from './users/entities/user.entity';
+import { UsersController } from './users/users.controller';
+import { UsersService } from './users/users.service';
 
 @Module({
   imports: [
@@ -38,6 +42,7 @@ import { ImageRecognitionModule } from './image-recognition/image-recognition.mo
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([User]),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -58,8 +63,9 @@ import { ImageRecognitionModule } from './image-recognition/image-recognition.mo
       },
     }),
     ImageRecognitionModule,
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, UsersController],
+  providers: [AppService, UsersService],
 })
 export class AppModule {}
