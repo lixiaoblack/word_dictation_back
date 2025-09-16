@@ -142,53 +142,6 @@ export class RecognitionResultDto {
   provider: 'doubao' | 'deepseek';
 }
 
-export class ApiSuccessResponseDto<T = any> {
-  @ApiProperty({
-    description: '请求是否成功',
-    example: true,
-  })
-  @IsBoolean()
-  success: boolean;
-
-  @ApiPropertyOptional({
-    description: '响应数据',
-  })
-  data?: T;
-
-  @ApiPropertyOptional({
-    description: '响应消息',
-    example: '操作成功',
-  })
-  @IsOptional()
-  @IsString()
-  message?: string;
-}
-
-export class ApiErrorResponseDto {
-  @ApiProperty({
-    description: '请求是否成功',
-    example: false,
-  })
-  @IsBoolean()
-  success: boolean;
-
-  @ApiPropertyOptional({
-    description: '错误信息',
-    example: '请求参数错误',
-  })
-  @IsOptional()
-  @IsString()
-  error?: string;
-
-  @ApiPropertyOptional({
-    description: '错误详细描述',
-    example: '文本内容不能为空',
-  })
-  @IsOptional()
-  @IsString()
-  message?: string;
-}
-
 export class HealthCheckResponseDto {
   @ApiProperty({
     description: '服务状态',
@@ -218,3 +171,6 @@ export class HealthCheckResponseDto {
   @IsString()
   version: string;
 }
+
+// 导出ResponseDto
+export { ResponseDto } from '../common/dto/response.dto';

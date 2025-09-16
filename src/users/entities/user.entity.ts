@@ -15,6 +15,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserDetail } from './user-detail.entity';
 
 @Entity('users')
 export class User {
@@ -38,6 +39,9 @@ export class User {
 
   @Column({ type: 'boolean', default: true })
   is_guest: boolean;
+
+  // 添加detail属性但不使用外键关系
+  detail: UserDetail;
 
   @CreateDateColumn()
   created_at: Date;

@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../common/redis.service';
+import { TokenUtils } from '../auth/token.utils';
 
 @Injectable()
 export class ExampleService {
-  constructor(private readonly redisService: RedisService) {}
+  constructor(
+    private readonly redisService: RedisService,
+    private readonly tokenUtils: TokenUtils,
+  ) {}
 
   /**
    * 示例：存储用户会话数据
@@ -98,5 +102,16 @@ export class ExampleService {
    */
   async getOnlineUsers(): Promise<number[]> {
     return await this.redisService.smembers<number>('online_users');
+  }
+
+  /**
+   * 示例：验证token
+   * @param token JWT token
+   * @returns 验证结果
+   */
+  async verifyToken(
+    token: string,
+  ): Promise<{ valid: boolean; payload?: any; error?: string }> {
+    return await this.tokenUtils.verifyToken(token);
   }
 }

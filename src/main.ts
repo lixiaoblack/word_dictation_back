@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,8 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:8080',
+      'http://localhost:8088',
+      'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -32,12 +35,15 @@ async function bootstrap() {
   // 全局异常过滤器
   app.useGlobalFilters(new GlobalExceptionFilter());
 
+  // 全局响应拦截器
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
   const urlPrefix = process.env.URL_PREFIX ?? '';
 
   // 设置全局路由前缀
   app.setGlobalPrefix(urlPrefix);
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 8088;
 
   // 配置Swagger文档
   if (process.env.NODE_ENV !== 'production') {
@@ -68,10 +74,21 @@ async function bootstrap() {
         'https://github.com/your-repo',
         'contact@example.com',
       )
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT', // 可选：提示格式
+          name: 'JWT',
+          description: process.env.JWT_SECRET,
+          in: 'header',
+        },
+        'Authorization',
+      )
       .setLicense('MIT', 'https://opensource.org/licenses/MIT')
       .addTag('健康检查', '服务状态检查相关接口')
       .addTag('图片识别', '图片文字识别和文本处理相关接口')
-      .addServer('http://localhost:3000', '开发环境')
+      .addServer(`http://localhost:${port}`, '开发环境')
       .addServer('https://api.example.com', '生产环境')
       .build();
 

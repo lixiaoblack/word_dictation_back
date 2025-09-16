@@ -13,15 +13,19 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ImageRecognitionModule } from './image-recognition/image-recognition.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
+import { UserDetail } from './users/entities/user-detail.entity';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
 import { RedisModule } from './common/redis.module';
 import { ExampleModule } from './example/example.module';
+import { GlobalAuthGuard } from './auth/guards/global-auth.guard';
 
 @Module({
   imports: [
@@ -39,12 +43,12 @@ import { ExampleModule } from './example/example.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: process.env.NODE_ENV !== 'production',
+        synchronize: false, // 禁用自动同步
         logging: process.env.NODE_ENV !== 'production',
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserDetail]),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -70,6 +74,14 @@ import { ExampleModule } from './example/example.module';
     ExampleModule,
   ],
   controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  providers: [
+    AppService,
+    UsersService,
+    JwtService,
+    {
+      provide: APP_GUARD,
+      useClass: GlobalAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

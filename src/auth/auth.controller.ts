@@ -19,6 +19,8 @@ import {
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { Public } from './decorators/public.decorator';
+import { ResponseDto } from '../dto';
 
 class LoginResponseDto {
   user: {
@@ -51,6 +53,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: '用户登录',
@@ -78,14 +81,25 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: '登录成功',
-    type: LoginResponseDto,
+    type: ResponseDto<LoginResponseDto>,
   })
   @ApiResponse({
     status: 401,
     description: '密码错误',
+    type: ResponseDto<null>,
   })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto.identifier, loginDto.password);
+  async login(
+    @Body() loginDto: LoginDto,
+  ): Promise<ResponseDto<LoginResponseDto> | ResponseDto<null>> {
+    try {
+      const result = await this.authService.login(
+        loginDto.identifier,
+        loginDto.password,
+      );
+      return new ResponseDto(200, result, undefined);
+    } catch (error) {
+      return new ResponseDto(401, null, error.message);
+    }
   }
 
   @Post('logout')
@@ -98,14 +112,17 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: '登出成功',
+    type: ResponseDto<null>,
   })
-  async logout(@CurrentUser() user: User) {
+  async logout(@CurrentUser() user: User): Promise<ResponseDto<null>> {
     await this.authService.logout(user.id);
-    return { message: '登出成功' };
+    return new ResponseDto(200, null, '登出成功');
   }
 
   @Get('checkRedis')
-  async checkRedis() {
-    return await this.authService.checkRedis();
+  @Public()
+  async checkRedis(): Promise<ResponseDto<any>> {
+    const result = await this.authService.checkRedis();
+    return new ResponseDto(200, result, undefined);
   }
 }

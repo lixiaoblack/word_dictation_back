@@ -16,12 +16,16 @@ import { AuthService } from './auth.service';
 import { AuthCacheService } from './auth-cache.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../users/entities/user.entity';
+import { UserDetail } from '../users/entities/user-detail.entity';
 import { UsersService } from '../users/users.service';
 import { RedisModule } from '../common/redis.module';
+import { AuthGuard } from './guards/auth.guard';
+import { TokenUtils } from './token.utils';
+import { GlobalAuthGuard } from './guards/global-auth.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserDetail]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -33,7 +37,21 @@ import { RedisModule } from '../common/redis.module';
     RedisModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthCacheService, UsersService, JwtStrategy],
-  exports: [AuthService, AuthCacheService],
+  providers: [
+    AuthService,
+    AuthCacheService,
+    UsersService,
+    JwtStrategy,
+    AuthGuard,
+    TokenUtils,
+    GlobalAuthGuard,
+  ],
+  exports: [
+    AuthService,
+    AuthCacheService,
+    AuthGuard,
+    TokenUtils,
+    GlobalAuthGuard,
+  ],
 })
 export class AuthModule {}

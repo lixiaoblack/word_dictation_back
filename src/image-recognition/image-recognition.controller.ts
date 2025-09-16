@@ -14,14 +14,12 @@ import {
   ApiConsumes,
   ApiBody,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ImageRecognitionService } from './image-recognition.service';
-import { ApiResponse as CustomApiResponse, RecognitionResult } from '../types';
-import {
-  RecognitionResultDto,
-  ApiSuccessResponseDto,
-  ApiErrorResponseDto,
-} from '../dto';
+import { RecognitionResult } from '../types';
+import { RecognitionResultDto } from '../dto';
+import { ResponseDto } from '../common/dto/response.dto';
 
 @ApiTags('图片识别')
 @Controller('recognition')
@@ -51,6 +49,7 @@ export class ImageRecognitionController {
     `,
   })
   @ApiConsumes('multipart/form-data')
+  @ApiBearerAuth()
   @ApiBody({
     description: '上传的图片文件',
     schema: {
@@ -75,20 +74,20 @@ export class ImageRecognitionController {
   @ApiResponse({
     status: 200,
     description: '图片识别成功',
-    type: ApiSuccessResponseDto<RecognitionResultDto>,
+    type: ResponseDto<RecognitionResultDto>,
   })
   @ApiResponse({
     status: 400,
     description: '请求参数错误',
-    type: ApiErrorResponseDto,
+    type: ResponseDto<null>,
   })
   async recognizeImage(
     @UploadedFile() file: Express.Multer.File,
     @Query('provider') provider: 'doubao' | 'deepseek' = 'doubao',
-  ): Promise<CustomApiResponse<RecognitionResult>> {
+  ): Promise<ResponseDto<RecognitionResultDto> | ResponseDto<null>> {
     try {
       if (!file) {
-        throw new BadRequestException('请上传图片文件');
+        return new ResponseDto(400, null, '请上传图片文件');
       }
 
       // 验证文件类型
@@ -99,13 +98,17 @@ export class ImageRecognitionController {
         'image/webp',
       ];
       if (!allowedTypes.includes(file.mimetype)) {
-        throw new BadRequestException('只支持 JPEG, PNG, JPG, WebP 格式的图片');
+        return new ResponseDto(
+          400,
+          null,
+          '只支持 JPEG, PNG, JPG, WebP 格式的图片',
+        );
       }
 
       // 验证文件大小（最大10MB）
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
-        throw new BadRequestException('图片文件大小不能超过10MB');
+        return new ResponseDto(400, null, '图片文件大小不能超过10MB');
       }
 
       const result = await this.imageRecognitionService.recognizeText(
@@ -113,16 +116,20 @@ export class ImageRecognitionController {
         provider,
       );
 
-      return {
-        success: true,
-        data: result,
-        message: '图片识别成功',
-      };
+      // 转换为DTO格式
+      const recognitionResultDto = new RecognitionResultDto();
+      recognitionResultDto.originalText = result.originalText;
+      recognitionResultDto.words = result.words;
+      recognitionResultDto.provider = result.provider;
+      recognitionResultDto.confidence = result.confidence;
+
+      return new ResponseDto(200, recognitionResultDto, '图片识别成功');
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '图片识别失败',
-      };
+      return new ResponseDto(
+        500,
+        null,
+        error instanceof Error ? error.message : '图片识别失败',
+      );
     }
   }
 
@@ -142,6 +149,7 @@ export class ImageRecognitionController {
       - 建议包含英文单词以获得最佳效果
     `,
   })
+  @ApiBearerAuth()
   @ApiQuery({
     name: 'text',
     required: true,
@@ -159,20 +167,20 @@ export class ImageRecognitionController {
   @ApiResponse({
     status: 200,
     description: '文本处理成功',
-    type: ApiSuccessResponseDto<RecognitionResultDto>,
+    type: ResponseDto<RecognitionResultDto>,
   })
   @ApiResponse({
     status: 400,
     description: '请求参数错误',
-    type: ApiErrorResponseDto,
+    type: ResponseDto<null>,
   })
   async recognizeText(
     @Query('text') text: string,
     @Query('provider') provider: 'doubao' | 'deepseek' = 'doubao',
-  ): Promise<CustomApiResponse<RecognitionResult>> {
+  ): Promise<ResponseDto<RecognitionResultDto> | ResponseDto<null>> {
     try {
       if (!text || text.trim().length === 0) {
-        throw new BadRequestException('请提供要处理的文本');
+        return new ResponseDto(400, null, '请提供要处理的文本');
       }
 
       const result = await this.imageRecognitionService.processText(
@@ -180,16 +188,20 @@ export class ImageRecognitionController {
         provider,
       );
 
-      return {
-        success: true,
-        data: result,
-        message: '文本处理成功',
-      };
+      // 转换为DTO格式
+      const recognitionResultDto = new RecognitionResultDto();
+      recognitionResultDto.originalText = result.originalText;
+      recognitionResultDto.words = result.words;
+      recognitionResultDto.provider = result.provider;
+      recognitionResultDto.confidence = result.confidence;
+
+      return new ResponseDto(200, recognitionResultDto, '文本处理成功');
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '文本处理失败',
-      };
+      return new ResponseDto(
+        500,
+        null,
+        error instanceof Error ? error.message : '文本处理失败',
+      );
     }
   }
 }
