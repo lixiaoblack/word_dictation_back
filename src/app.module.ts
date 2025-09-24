@@ -26,6 +26,9 @@ import { UsersService } from './users/users.service';
 import { RedisModule } from './common/redis.module';
 import { ExampleModule } from './example/example.module';
 import { GlobalAuthGuard } from './auth/guards/global-auth.guard';
+import { UploadModule } from './common/upload.module';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Module({
   imports: [
@@ -67,11 +70,23 @@ import { GlobalAuthGuard } from './auth/guards/global-auth.guard';
       limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
       },
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          // 自定义文件名
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
     }),
     ImageRecognitionModule,
     AuthModule,
     RedisModule,
     ExampleModule,
+    UploadModule,
   ],
   controllers: [AppController, UsersController],
   providers: [

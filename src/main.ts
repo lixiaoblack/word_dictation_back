@@ -4,6 +4,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { SwaggerAuthMiddleware } from './middleware/swagger-auth.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,13 +12,7 @@ async function bootstrap() {
 
   // 启用CORS
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:8080',
-      'http://localhost:8088',
-      'http://localhost:5173',
-    ],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -37,6 +32,9 @@ async function bootstrap() {
 
   // 全局响应拦截器
   app.useGlobalInterceptors(new ResponseInterceptor());
+
+  // 应用Swagger认证中间件
+  app.use(new SwaggerAuthMiddleware().use.bind(new SwaggerAuthMiddleware()));
 
   const urlPrefix = process.env.URL_PREFIX ?? '';
 
@@ -89,7 +87,7 @@ async function bootstrap() {
       .addTag('健康检查', '服务状态检查相关接口')
       .addTag('图片识别', '图片文字识别和文本处理相关接口')
       .addServer(`http://localhost:${port}`, '开发环境')
-      .addServer('https://api.example.com', '生产环境')
+      .addServer('http://119.45.129.229:8088', '生产环境')
       .build();
 
     const document = SwaggerModule.createDocument(app, config, {

@@ -8,7 +8,7 @@
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
  */
 import { Module } from '@nestjs/common';
-import { RedisService } from './redis.service';
+import { RedisService } from './services/redis.service';
 
 @Module({
   providers: [RedisService],

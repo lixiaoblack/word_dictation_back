@@ -8,7 +8,7 @@
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
  */
 import { Injectable } from '@nestjs/common';
-import { RedisService } from '../common/redis.service';
+import { RedisService } from '../common/services/redis.service';
 
 @Injectable()
 export class AuthCacheService {
