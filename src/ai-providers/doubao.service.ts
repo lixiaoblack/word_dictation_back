@@ -38,7 +38,7 @@ export class DoubaoService {
    - word: 单词原形
    - phonetic: 音标（英式发音）
    - translation: 中文翻译
-   - partOfSpeech: 词性（如：名词、动词、形容词等）
+   - partOfSpeech: 词性（如：v、n、adj、adv 等）
                 ，没有的信息默认填充为空，不要添加任何解释或格式。`,
               },
               {

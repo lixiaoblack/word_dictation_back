@@ -173,4 +173,4 @@ export class HealthCheckResponseDto {
 }
 
 // 导出ResponseDto
-export { ResponseDto } from '../common/dto/response.dto';
+export { ResponseDto } from '../../common/dto/response.dto';

@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { ImageRecognitionService } from './image-recognition.service';
 import { RecognitionResult } from '../types';
-import { RecognitionResultDto } from '../dto';
+import { RecognitionResultDto } from './dto';
 import { ResponseDto } from '../common/dto/response.dto';
 
 @ApiTags('图片识别')

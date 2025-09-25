@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-16 18:09:52
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-17 23:45:46
+ * @LastEditTime: 2025-09-24 22:50:00
  * @Description:
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -50,13 +50,17 @@ export class OssService {
   async uploadFile(
     file: Express.Multer.File,
     fileName?: string,
+    folder?: string,
   ): Promise<string> {
     try {
       // 如果没有提供文件名，则生成一个唯一的文件名
-      const name = fileName || `${Date.now()}-${file.originalname}`;
+      const baseName = fileName || `${Date.now()}-${file.originalname}`;
+
+      // 构建完整的文件路径（包含文件夹）
+      const fullPath = folder ? `${folder}/${baseName}` : baseName;
 
       // 上传文件
-      const result = await this.client.put(name, file.buffer);
+      const result = await this.client.put(fullPath, file.buffer);
 
       this.logger.log(`文件上传成功: ${result.name}`);
       return result.url;
@@ -66,7 +70,11 @@ export class OssService {
     }
   }
 
-  async uploadBase64(base64Data: string, fileName: string): Promise<string> {
+  async uploadBase64(
+    base64Data: string,
+    fileName: string,
+    folder?: string,
+  ): Promise<string> {
     try {
       // 移除base64数据URL前缀（如果存在）
       const base64Content = base64Data.replace(/^data:image\/\w+;base64,/, '');
@@ -74,8 +82,11 @@ export class OssService {
       // 将base64转换为Buffer
       const buffer = Buffer.from(base64Content, 'base64');
 
+      // 构建完整的文件路径（包含文件夹）
+      const fullPath = folder ? `${folder}/${fileName}` : fileName;
+
       // 上传文件
-      const result = await this.client.put(fileName, buffer);
+      const result = await this.client.put(fullPath, buffer);
 
       this.logger.log(`Base64文件上传成功: ${result.name}`);
       return result.url;

@@ -20,7 +20,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { Public } from './decorators/public.decorator';
-import { ResponseDto } from '../dto';
+import { ResponseDto } from '../image-recognition/dto';
 
 class LoginResponseDto {
   user: {

@@ -18,6 +18,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ImageRecognitionModule } from './image-recognition/image-recognition.module';
+import { WordsModule } from './words/words.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { UserDetail } from './users/entities/user-detail.entity';
@@ -83,6 +84,7 @@ import { extname } from 'path';
       }),
     }),
     ImageRecognitionModule,
+    WordsModule,
     AuthModule,
     RedisModule,
     ExampleModule,

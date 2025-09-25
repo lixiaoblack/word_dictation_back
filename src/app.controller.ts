@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { HealthCheckResponseDto, ResponseDto } from './dto';
+import { HealthCheckResponseDto, ResponseDto } from './image-recognition/dto';
 import { Public } from './auth/decorators/public.decorator';
 
 @ApiTags('健康检查')

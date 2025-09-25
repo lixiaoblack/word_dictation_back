@@ -20,7 +20,7 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { UpdateUserDetailDto } from './dto/update-user-detail.dto';
 import { UserDetail } from './entities/user-detail.entity';
-import { ResponseDto } from '../dto';
+import { ResponseDto } from '../image-recognition/dto';
 
 @ApiTags('用户')
 @Controller('users')
