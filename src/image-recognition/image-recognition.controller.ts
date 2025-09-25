@@ -17,6 +17,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ImageRecognitionService } from './image-recognition.service';
+import { EnhancedRecognitionService } from './enhanced-recognition.service';
 import { RecognitionResult } from '../types';
 import { RecognitionResultDto } from './dto';
 import { ResponseDto } from '../common/dto/response.dto';
@@ -26,6 +27,7 @@ import { ResponseDto } from '../common/dto/response.dto';
 export class ImageRecognitionController {
   constructor(
     private readonly imageRecognitionService: ImageRecognitionService,
+    private readonly enhancedRecognitionService: EnhancedRecognitionService,
   ) {}
 
   @Post('upload')
@@ -74,7 +76,37 @@ export class ImageRecognitionController {
   @ApiResponse({
     status: 200,
     description: '图片识别成功',
-    type: ResponseDto<RecognitionResultDto>,
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'object',
+          properties: {
+            originalText: { type: 'string', example: 'Hello world' },
+            words: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  word: { type: 'string' },
+                  us_phonetic: { type: 'string' },
+                  uk_phonetic: { type: 'string' },
+                  sentences: { type: 'array' },
+                  synonyms: { type: 'array' },
+                  translations: { type: 'array' },
+                  phrases: { type: 'array' },
+                  related_words: { type: 'array' },
+                },
+              },
+            },
+            provider: { type: 'string', example: 'doubao' },
+            confidence: { type: 'number', example: 85 },
+          },
+        },
+        errmsg: { type: 'string', example: '图片识别成功' },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
@@ -84,7 +116,7 @@ export class ImageRecognitionController {
   async recognizeImage(
     @UploadedFile() file: Express.Multer.File,
     @Query('provider') provider: 'doubao' | 'deepseek' = 'doubao',
-  ): Promise<ResponseDto<RecognitionResultDto> | ResponseDto<null>> {
+  ): Promise<ResponseDto<any> | ResponseDto<null>> {
     try {
       if (!file) {
         return new ResponseDto(400, null, '请上传图片文件');
@@ -111,17 +143,20 @@ export class ImageRecognitionController {
         return new ResponseDto(400, null, '图片文件大小不能超过10MB');
       }
 
-      const result = await this.imageRecognitionService.recognizeText(
-        file,
-        provider,
-      );
+      // 使用增强识别服务，自动补充数据库信息
+      const result =
+        await this.enhancedRecognitionService.recognizeImageWithEnhancement(
+          file,
+          provider,
+        );
 
-      // 转换为DTO格式
-      const recognitionResultDto = new RecognitionResultDto();
-      recognitionResultDto.originalText = result.originalText;
-      recognitionResultDto.words = result.words;
-      recognitionResultDto.provider = result.provider;
-      recognitionResultDto.confidence = result.confidence;
+      // 转换为统一的返回格式
+      const recognitionResultDto = {
+        originalText: result.originalText,
+        words: result.words, // 已经是 WordDetailDto 格式
+        provider: result.provider,
+        confidence: result.confidence,
+      };
 
       return new ResponseDto(200, recognitionResultDto, '图片识别成功');
     } catch (error) {
