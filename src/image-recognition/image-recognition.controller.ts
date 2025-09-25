@@ -51,7 +51,7 @@ export class ImageRecognitionController {
     `,
   })
   @ApiConsumes('multipart/form-data')
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiBody({
     description: '上传的图片文件',
     schema: {
@@ -184,7 +184,7 @@ export class ImageRecognitionController {
       - 建议包含英文单词以获得最佳效果
     `,
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiQuery({
     name: 'text',
     required: true,

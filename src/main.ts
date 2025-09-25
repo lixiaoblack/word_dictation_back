@@ -76,12 +76,12 @@ async function bootstrap() {
         {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT', // 可选：提示格式
-          name: 'JWT',
-          description: process.env.JWT_SECRET,
+          bearerFormat: 'JWT',
+          name: 'Authorization',
+          description: '请输入JWT token，格式为: Bearer <token>',
           in: 'header',
         },
-        'Authorization',
+        'bearer', // 这是引用名称，需要与@ApiBearerAuth()中的参数匹配
       )
       .setLicense('MIT', 'https://opensource.org/licenses/MIT')
       .addTag('健康检查', '服务状态检查相关接口')

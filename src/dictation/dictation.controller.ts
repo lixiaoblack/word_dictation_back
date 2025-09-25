@@ -38,7 +38,7 @@ import { DictationRecord } from './entities/dictation-record.entity';
 
 @ApiTags('听写管理')
 @Controller('dictation')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 export class DictationController {
   constructor(private readonly dictationService: DictationService) {}
 

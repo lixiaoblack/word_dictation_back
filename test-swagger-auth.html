@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swagger 认证测试</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .section h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      input,
+      button {
+        padding: 10px;
+        margin: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+      }
+      .success {
+        border-left: 4px solid #28a745;
+      }
+      .error {
+        border-left: 4px solid #dc3545;
+      }
+      .links {
+        margin-top: 20px;
+      }
+      .links a {
+        display: inline-block;
+        margin: 5px 10px 5px 0;
+        padding: 10px 15px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      .links a:hover {
+        background-color: #218838;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Swagger JWT 认证测试</h1>
+
+      <div class="section">
+        <h3>1. 用户登录 - 获取 JWT Token</h3>
+        <input
+          type="text"
+          id="email"
+          placeholder="邮箱"
+          value="admin@example.com"
+        />
+        <input
+          type="password"
+          id="password"
+          placeholder="密码"
+          value="password123"
+        />
+        <button onclick="login()">登录</button>
+        <div id="loginResult" class="result" style="display: none"></div>
+      </div>
+
+      <div class="section">
+        <h3>2. 测试需要认证的接口</h3>
+        <input
+          type="text"
+          id="tokenInput"
+          placeholder="JWT Token (从登录结果复制)"
+          style="width: 500px"
+        />
+        <button onclick="testProtectedAPI()">测试受保护的API</button>
+        <div id="apiResult" class="result" style="display: none"></div>
+      </div>
+
+      <div class="section">
+        <h3>3. 使用说明</h3>
+        <p><strong>在 Swagger UI 中使用认证：</strong></p>
+        <ol>
+          <li>点击上方"登录"按钮获取JWT Token</li>
+          <li>复制返回的token值（不包括"Bearer "前缀）</li>
+          <li>在Swagger UI页面点击右上角的🔒"Authorize"按钮</li>
+          <li>在弹出的对话框中，在"bearer (http, Bearer)"字段中粘贴token</li>
+          <li>点击"Authorize"，然后点击"Close"</li>
+          <li>现在所有需要认证的接口都可以正常使用了</li>
+        </ol>
+      </div>
+
+      <div class="links">
+        <a href="http://localhost:8088/api/docs" target="_blank"
+          >📚 打开 Swagger 文档</a
+        >
+        <a href="http://localhost:8088/en-study/example/public" target="_blank"
+          >🌐 测试公开接口</a
+        >
+      </div>
+    </div>
+
+    <script>
+      let currentToken = '';
+
+      async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const resultDiv = document.getElementById('loginResult');
+
+        try {
+          const response = await fetch(
+            'http://localhost:8088/en-study/auth/login',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                identifier: email,
+                password: password,
+              }),
+            },
+          );
+
+          const data = await response.json();
+
+          if (data.code === 200) {
+            currentToken = data.data.token;
+            document.getElementById('tokenInput').value = currentToken;
+
+            resultDiv.innerHTML = `✅ 登录成功！
+                    
+用户信息:
+- 用户ID: ${data.data.user.id}
+- 邮箱: ${data.data.user.email}
+- UUID: ${data.data.user.uuid}
+
+JWT Token:
+${currentToken}
+
+📋 Token 已自动填入下方输入框，请复制token到Swagger UI进行认证。`;
+            resultDiv.className = 'result success';
+          } else {
+            resultDiv.innerHTML = `❌ 登录失败: ${data.errmsg || '未知错误'}`;
+            resultDiv.className = 'result error';
+          }
+
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.innerHTML = `❌ 网络错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      }
+
+      async function testProtectedAPI() {
+        const token = document.getElementById('tokenInput').value;
+        const resultDiv = document.getElementById('apiResult');
+
+        if (!token) {
+          resultDiv.innerHTML = '❌ 请先获取JWT Token';
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            'http://localhost:8088/en-study/example/protected',
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            },
+          );
+
+          const data = await response.json();
+
+          if (response.ok && data.code === 200) {
+            resultDiv.innerHTML = `✅ 认证成功！受保护的API调用成功
+
+响应数据:
+${JSON.stringify(data, null, 2)}`;
+            resultDiv.className = 'result success';
+          } else {
+            resultDiv.innerHTML = `❌ 认证失败: ${data.errmsg || '未知错误'}
+                    
+HTTP状态码: ${response.status}
+响应内容: ${JSON.stringify(data, null, 2)}`;
+            resultDiv.className = 'result error';
+          }
+
+          resultDiv.style.display = 'block';
+        } catch (error) {
+          resultDiv.innerHTML = `❌ 网络错误: ${error.message}`;
+          resultDiv.className = 'result error';
+          resultDiv.style.display = 'block';
+        }
+      }
+
+      // 页面加载时显示当前配置
+      window.onload = function () {
+        console.log('🚀 英文学习助手 - Swagger认证测试页面');
+        console.log('📡 API地址: http://localhost:8088');
+        console.log('📚 Swagger文档: http://localhost:8088/api/docs');
+      };
+    </script>
+  </body>
+</html>

@@ -32,7 +32,7 @@ export class ExampleController {
   constructor(private readonly tokenUtils: TokenUtils) {}
 
   @Get('protected')
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: '受保护的路由示例',
     description: '需要有效的JWT token才能访问',
@@ -62,7 +62,7 @@ export class ExampleController {
   }
 
   @Get('token-info')
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: '获取token信息',
     description: '使用TokenUtils服务解析token信息',

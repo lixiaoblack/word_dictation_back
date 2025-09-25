@@ -29,7 +29,7 @@ export class UsersController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: '获取当前用户信息',
     description: '获取当前认证用户的信息',
@@ -50,7 +50,7 @@ export class UsersController {
 
   @Put('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: '更新用户信息',
     description: '更新当前认证用户的详细信息',

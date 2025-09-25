@@ -48,7 +48,7 @@ export class UploadController {
 
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiOperation({
     summary: '上传图片文件',
     description:

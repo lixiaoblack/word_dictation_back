@@ -59,7 +59,7 @@ export class WordsController {
       - 短语列表（phrases）：包含短语和翻译
     `,
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiBody({
     type: ImportWordsDto,
     description: '单词数据',
@@ -324,7 +324,7 @@ export class WordsController {
       - 文本清理
     `,
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: '上传的JSON文件',
@@ -467,7 +467,7 @@ export class WordsController {
     summary: '创建或更新单词书',
     description: '创建新的单词书或更新现有单词书信息',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiBody({ type: CreateWordBookDto })
   @ApiResponse({
     status: 200,
@@ -733,7 +733,7 @@ export class WordsController {
     summary: '更新单词书的统计信息',
     description: '手动触发更新指定单词书的统计信息',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiParam({
     name: 'bookId',
     description: '单词书ID',
@@ -764,7 +764,7 @@ export class WordsController {
     summary: '设置单词书推荐状态',
     description: '设置或取消单词书的推荐状态',
   })
-  @ApiBearerAuth()
+  @ApiBearerAuth('bearer')
   @ApiParam({
     name: 'bookId',
     description: '单词书ID',
