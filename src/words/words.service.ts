@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-24 16:07:53
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-24 16:21:54
+ * @LastEditTime: 2025-09-26 10:55:41
  * @Description: 单词服务类
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -398,6 +398,7 @@ export class WordsService {
    * 根据单词查询完整信息（返回所有匹配的单词记录）
    * @param wordText 单词文本
    * @param bookId 单词书ID（可选，用于筛选特定单词书）
+   * @returns 返回包含单词、翻译、短语、例句的完整信息
    */
   async getWordInfo(
     wordText: string,
@@ -407,6 +408,7 @@ export class WordsService {
       word: Word;
       translations: WordTranslation[];
       phrases: WordPhrase[];
+      sentences: WordSentence[];
     }[]
   > {
     const whereCondition: any = { word: wordText, is_active: true };
@@ -427,9 +429,10 @@ export class WordsService {
       word: Word;
       translations: WordTranslation[];
       phrases: WordPhrase[];
+      sentences: WordSentence[];
     }> = [];
     for (const word of words) {
-      const [translations, phrases] = await Promise.all([
+      const [allTranslations, phrases, sentences] = await Promise.all([
         this.wordTranslationRepository.find({
           where: { word_id: word.id },
           order: { sort_order: 'ASC' },
@@ -438,7 +441,29 @@ export class WordsService {
           where: { word_id: word.id },
           order: { sort_order: 'ASC' },
         }),
+        this.wordSentenceRepository.find({
+          where: { word_id: word.id },
+          order: { sort_order: 'ASC' },
+        }),
       ]);
+
+      // 对翻译信息进行去重处理（基于translation和part_of_speech的组合）
+      const translationMap = new Map<string, WordTranslation>();
+      for (const translation of allTranslations) {
+        const key = `${translation.translation}|${translation.part_of_speech}`;
+        if (!translationMap.has(key)) {
+          translationMap.set(key, translation);
+        } else {
+          // 如果已存在，保留sort_order较小的（优先级更高）
+          const existing = translationMap.get(key)!;
+          if (translation.sort_order < existing.sort_order) {
+            translationMap.set(key, translation);
+          }
+        }
+      }
+      const translations = Array.from(translationMap.values()).sort(
+        (a, b) => a.sort_order - b.sort_order,
+      );
 
       // 更新查看次数（只更新第一个匹配的单词）
       if (results.length === 0) {
@@ -451,6 +476,7 @@ export class WordsService {
         word,
         translations,
         phrases,
+        sentences,
       });
     }
 
@@ -470,6 +496,7 @@ export class WordsService {
       word: Word;
       translations: WordTranslation[];
       phrases: WordPhrase[];
+      sentences: WordSentence[];
     }[]
   > {
     const words = await this.wordRepository
@@ -484,10 +511,11 @@ export class WordsService {
       word: Word;
       translations: WordTranslation[];
       phrases: WordPhrase[];
+      sentences: WordSentence[];
     }[] = [];
 
     for (const word of words) {
-      const translations = await this.wordTranslationRepository.find({
+      const allTranslations = await this.wordTranslationRepository.find({
         where: { word_id: word.id },
         order: { sort_order: 'ASC' },
       });
@@ -497,10 +525,32 @@ export class WordsService {
         order: { sort_order: 'ASC' },
       });
 
+      const sentences = await this.wordSentenceRepository.find({
+        where: { word_id: word.id },
+        order: { sort_order: 'ASC' },
+      });
+      // 对翻译信息进行去重处理
+      const translationMap = new Map<string, WordTranslation>();
+      for (const translation of allTranslations) {
+        const key = `${translation.translation}|${translation.part_of_speech}`;
+        if (!translationMap.has(key)) {
+          translationMap.set(key, translation);
+        } else {
+          const existing = translationMap.get(key)!;
+          if (translation.sort_order < existing.sort_order) {
+            translationMap.set(key, translation);
+          }
+        }
+      }
+      const translations = Array.from(translationMap.values()).sort(
+        (a, b) => a.sort_order - b.sort_order,
+      );
+
       results.push({
         word,
         translations,
         phrases,
+        sentences,
       });
     }
 

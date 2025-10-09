@@ -143,30 +143,84 @@ export class EnhancedRecognitionService {
               enhancedWord.uk_phonetic = dbWord.word.uk_phonetic;
             }
 
-            // 添加数据库中的翻译信息
+            // 添加数据库中的翻译信息（去重处理）
             if (dbWord.translations && dbWord.translations.length > 0) {
               for (const translation of dbWord.translations) {
-                enhancedWord.translations.push({
-                  translation: translation.translation,
-                  part_of_speech: translation.part_of_speech,
-                  is_primary: false,
-                  source: 'database',
-                });
+                // 检查是否已存在相同的翻译（基于translation和part_of_speech）
+                const isDuplicate = enhancedWord.translations.some(
+                  (existing) =>
+                    existing.translation === translation.translation &&
+                    existing.part_of_speech === translation.part_of_speech,
+                );
+
+                if (!isDuplicate) {
+                  enhancedWord.translations.push({
+                    translation: translation.translation,
+                    part_of_speech: translation.part_of_speech,
+                    is_primary: false,
+                    source: 'database',
+                  });
+                }
               }
             }
 
-            // 添加短语信息
+            // 添加短语信息（最多5个）
             if (dbWord.phrases && dbWord.phrases.length > 0) {
-              for (const phrase of dbWord.phrases) {
-                enhancedWord.phrases.push({
-                  phrase: phrase.phrase,
-                  translation: phrase.translation,
-                });
+              const maxPhrases = 5;
+              const currentPhrasesCount = enhancedWord.phrases.length;
+              const remainingSlots = Math.max(
+                0,
+                maxPhrases - currentPhrasesCount,
+              );
+
+              if (remainingSlots > 0) {
+                const phrasesToAdd = dbWord.phrases.slice(0, remainingSlots);
+                for (const phrase of phrasesToAdd) {
+                  enhancedWord.phrases.push({
+                    phrase: phrase.phrase,
+                    translation: phrase.translation,
+                  });
+                }
+              }
+
+              if (dbWord.phrases.length > remainingSlots) {
+                this.logger.log(
+                  `单词 "${word}" 的短语信息过多，已限制为前${maxPhrases}个（当前已有${currentPhrasesCount}个，新增${remainingSlots}个）`,
+                );
+              }
+            }
+
+            // 添加例句信息（最多3条）
+            if (dbWord.sentences && dbWord.sentences.length > 0) {
+              const maxSentences = 3;
+              const currentSentencesCount = enhancedWord.sentences.length;
+              const remainingSlots = Math.max(
+                0,
+                maxSentences - currentSentencesCount,
+              );
+
+              if (remainingSlots > 0) {
+                const sentencesToAdd = dbWord.sentences.slice(
+                  0,
+                  remainingSlots,
+                );
+                for (const sentence of sentencesToAdd) {
+                  enhancedWord.sentences.push({
+                    sentence: sentence.sentence_en,
+                    translation: sentence.sentence_cn,
+                  });
+                }
+              }
+
+              if (dbWord.sentences.length > remainingSlots) {
+                this.logger.log(
+                  `单词 "${word}" 的例句信息过多，已限制为前${maxSentences}条（当前已有${currentSentencesCount}条，新增${remainingSlots}条）`,
+                );
               }
             }
 
             // TODO: 以下功能需要扩展WordsService来支持
-            // 例句、同义词、相关词汇暂时留空，后续可扩展
+            // 同义词、相关词汇暂时留空，后续可扩展
             // 可以通过单独的服务方法获取这些关联数据
           }
         } else {
@@ -186,6 +240,22 @@ export class EnhancedRecognitionService {
           source: 'ai_recognition',
         });
       }
+
+      // 最终的翻译去重处理（防止任何漏网的重复）
+      const translationMap = new Map<string, any>();
+      for (const translation of enhancedWord.translations) {
+        const key = `${translation.translation}|${translation.part_of_speech}`;
+        if (!translationMap.has(key)) {
+          translationMap.set(key, translation);
+        } else {
+          // 如果重复，保留is_primary为true的，或者保留第一个
+          const existing = translationMap.get(key);
+          if (translation.is_primary && !existing.is_primary) {
+            translationMap.set(key, translation);
+          }
+        }
+      }
+      enhancedWord.translations = Array.from(translationMap.values());
 
       this.logger.debug(`单词 "${word}" 增强完成:`, {
         translationsCount: enhancedWord.translations.length,

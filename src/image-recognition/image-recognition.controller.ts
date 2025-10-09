@@ -18,7 +18,6 @@ import {
 } from '@nestjs/swagger';
 import { ImageRecognitionService } from './image-recognition.service';
 import { EnhancedRecognitionService } from './enhanced-recognition.service';
-import { RecognitionResult } from '../types';
 import { RecognitionResultDto } from './dto';
 import { ResponseDto } from '../common/dto/response.dto';
 
