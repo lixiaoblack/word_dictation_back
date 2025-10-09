@@ -10,6 +10,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ImageRecognitionService } from './image-recognition.service';
 import { WordsService } from '../words/words.service';
+import { TtsService } from '../tts/tts.service';
 import { WordDetailDto } from '../dictation/dto/dictation.dto';
 import { WordInfo, RecognitionResult } from '../types';
 
@@ -20,21 +21,25 @@ export class EnhancedRecognitionService {
   constructor(
     private readonly imageRecognitionService: ImageRecognitionService,
     private readonly wordsService: WordsService,
+    private readonly ttsService: TtsService,
   ) {}
 
   /**
-   * 增强的图片识别 - 包含数据库查询补充信息
+   * 增强的图片识别 - 包含数据库查询补充信息和可选的语音生成
    * @param file 图片文件
    * @param provider AI提供商
+   * @param generateAudio 是否生成语音
    */
   async recognizeImageWithEnhancement(
     file: Express.Multer.File,
     provider: 'doubao' | 'deepseek' = 'doubao',
+    generateAudio: boolean = false,
   ): Promise<{
     originalText: string;
     words: WordDetailDto[];
     provider: string;
     confidence?: number;
+    audioData?: { [word: string]: string }; // 新增音频数据
   }> {
     try {
       // 1. 进行基础图片识别
@@ -53,11 +58,18 @@ export class EnhancedRecognitionService {
         enhancedWords.push(enhancedWord);
       }
 
+      // 3. 生成语音（可选）
+      let audioData: { [word: string]: string } | undefined;
+      if (generateAudio) {
+        audioData = await this.generateWordsAudio(enhancedWords);
+      }
+
       return {
         originalText: recognitionResult.originalText,
         words: enhancedWords,
         provider: recognitionResult.provider,
         confidence: recognitionResult.confidence,
+        audioData,
       };
     } catch (error) {
       this.logger.error('增强图片识别失败:', error);
@@ -290,5 +302,43 @@ export class EnhancedRecognitionService {
         related_words: [],
       };
     }
+  }
+
+  /**
+   * 为单词列表生成语音
+   * @param words 单词列表
+   */
+  private async generateWordsAudio(
+    words: WordDetailDto[],
+  ): Promise<{ [word: string]: string }> {
+    const audioData: { [word: string]: string } = {};
+
+    this.logger.log(`开始为 ${words.length} 个单词生成语音`);
+
+    for (const wordDetail of words) {
+      try {
+        const audioResult = await this.ttsService.wordPronunciation(
+          wordDetail.word,
+          'en-US-AriaNeural', // 英文发音
+          1.0, // 正常语速
+        );
+
+        // 转为Base64格式
+        audioData[wordDetail.word] =
+          `data:audio/mpeg;base64,${audioResult.buffer.toString('base64')}`;
+
+        this.logger.debug(
+          `单词 "${wordDetail.word}" 语音生成成功，大小: ${audioResult.size} 字节`,
+        );
+      } catch (error) {
+        this.logger.warn(`为单词 "${wordDetail.word}" 生成语音失败:`, error);
+        // 失败的单词不影响其他单词的处理
+      }
+    }
+
+    this.logger.log(
+      `语音生成完成，成功 ${Object.keys(audioData).length}/${words.length} 个单词`,
+    );
+    return audioData;
   }
 }

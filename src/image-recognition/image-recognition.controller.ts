@@ -115,6 +115,7 @@ export class ImageRecognitionController {
   async recognizeImage(
     @UploadedFile() file: Express.Multer.File,
     @Query('provider') provider: 'doubao' | 'deepseek' = 'doubao',
+    @Query('generateAudio') generateAudio: boolean = false,
   ): Promise<ResponseDto<any> | ResponseDto<null>> {
     try {
       if (!file) {
@@ -147,6 +148,7 @@ export class ImageRecognitionController {
         await this.enhancedRecognitionService.recognizeImageWithEnhancement(
           file,
           provider,
+          generateAudio,
         );
 
       // 转换为统一的返回格式
@@ -155,6 +157,7 @@ export class ImageRecognitionController {
         words: result.words, // 已经是 WordDetailDto 格式
         provider: result.provider,
         confidence: result.confidence,
+        audioData: result.audioData, // 新增音频数据
       };
 
       return new ResponseDto(200, recognitionResultDto, '图片识别成功');

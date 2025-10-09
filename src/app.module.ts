@@ -28,6 +28,7 @@ import { UsersService } from './users/users.service';
 import { RedisModule } from './common/redis.module';
 import { ExampleModule } from './example/example.module';
 import { GlobalAuthGuard } from './auth/guards/global-auth.guard';
+import { TtsModule } from './tts/tts.module';
 import { UploadModule } from './common/upload.module';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -90,7 +91,7 @@ import { extname } from 'path';
     AuthModule,
     RedisModule,
     ExampleModule,
-    UploadModule,
+    TtsModule,
   ],
   controllers: [AppController, UsersController],
   providers: [

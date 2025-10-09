@@ -7,9 +7,10 @@ import { DoubaoService } from '../ai-providers/doubao.service';
 import { DeepSeekService } from '../ai-providers/deepseek.service';
 import { TranslationService } from '../translation/translation.service';
 import { WordsModule } from '../words/words.module';
+import { TtsModule } from '../tts/tts.module';
 
 @Module({
-  imports: [ConfigModule, WordsModule],
+  imports: [ConfigModule, WordsModule, TtsModule],
   controllers: [ImageRecognitionController],
   providers: [
     ImageRecognitionService,
