@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-25 18:30:00
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-25 18:30:00
+ * @LastEditTime: 2025-10-10 10:09:30
  * @Description: 听写控制器
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -70,7 +70,7 @@ export class DictationController {
         userId,
       );
 
-      return new ResponseDto(201, result, '听写记录创建成功');
+      return new ResponseDto(200, result, '听写记录创建成功');
     } catch (error) {
       return new ResponseDto(
         500,

@@ -101,6 +101,14 @@ export class DictationWord {
   @Column({ type: 'text', nullable: true, comment: '备注信息' })
   notes: string | null;
 
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+    comment: '中文释义语音文件URL',
+  })
+  chinese_audio_url: string | null;
+
   @CreateDateColumn({ comment: '创建时间' })
   created_at: Date;
 

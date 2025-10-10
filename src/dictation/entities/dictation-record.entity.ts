@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-25 18:00:00
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-25 18:00:00
+ * @LastEditTime: 2025-10-10 10:48:00
  * @Description: 听写记录实体
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -49,6 +49,9 @@ export class DictationRecord {
 
   @Column({ type: 'varchar', length: 36, nullable: true, comment: '用户ID' })
   user_id: string;
+
+  @Column({ type: 'varchar', length: 255, comment: '封面图' })
+  cover_url: string;
 
   @Column({ type: 'varchar', length: 100, comment: '听写名称' })
   name: string;

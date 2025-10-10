@@ -15,11 +15,13 @@ import { DictationRecord } from './entities/dictation-record.entity';
 import { DictationWord } from './entities/dictation-word.entity';
 import { WrongWord } from './entities/wrong-word.entity';
 import { WordsModule } from '../words/words.module';
+import { TtsModule } from '../tts/tts.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DictationRecord, DictationWord, WrongWord]),
     WordsModule, // 导入单词模块以使用WordsService
+    TtsModule, // 导入TTS模块以使用TtsService
   ],
   controllers: [DictationController],
   providers: [DictationService],

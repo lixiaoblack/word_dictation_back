@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-25 18:15:00
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-25 18:15:00
+ * @LastEditTime: 2025-10-10 10:47:15
  * @Description: 听写相关DTO
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -144,6 +144,11 @@ export class CreateDictationDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiPropertyOptional({ description: '封面图', example: 'xxx.png' })
+  @IsOptional()
+  @IsString()
+  cover_url?: string;
 
   @ApiPropertyOptional({ description: '听写描述', example: '基础单词听写练习' })
   @IsOptional()

@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-25 18:20:00
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-25 18:20:00
+ * @LastEditTime: 2025-10-10 11:03:00
  * @Description: 听写服务类
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -20,6 +20,7 @@ import {
 } from './entities/dictation-word.entity';
 import { WrongWord } from './entities/wrong-word.entity';
 import { WordsService } from '../words/words.service';
+import { TtsService } from '../tts/tts.service';
 import {
   CreateDictationDto,
   DictationRecordQueryDto,
@@ -40,6 +41,7 @@ export class DictationService {
     @InjectRepository(WrongWord)
     private readonly wrongWordRepository: Repository<WrongWord>,
     private readonly wordsService: WordsService,
+    private readonly ttsService: TtsService,
   ) {}
 
   /**
@@ -55,6 +57,7 @@ export class DictationService {
       // 创建听写记录
       const dictationRecord = this.dictationRecordRepository.create({
         user_id: userId,
+        cover_url: createDictationDto.cover_url,
         name: createDictationDto.name,
         description: createDictationDto.description,
         question_type: createDictationDto.question_type,
@@ -71,6 +74,36 @@ export class DictationService {
       // 创建听写单词记录
       for (let i = 0; i < createDictationDto.words.length; i++) {
         const wordDetail = createDictationDto.words[i];
+
+        // 获取第一个中文释义进行语音合成
+        let chineseAudioUrl: string | null = null;
+        try {
+          const firstTranslation =
+            wordDetail.translations?.find(
+              (t) => t.is_primary || wordDetail.translations[0],
+            )?.translation || wordDetail.translations?.[0]?.translation;
+
+          if (firstTranslation) {
+            this.logger.log(
+              `为单词 "${wordDetail.word}" 的中文释义 "${firstTranslation}" 生成语音`,
+            );
+
+            const audioResult = await this.ttsService.getAudioUrl(
+              firstTranslation,
+              { voice: 'zh-CN-XiaoxiaoNeural' }, // 使用中文女声
+              userId,
+              false, // 不强制重新生成，使用缓存
+            );
+
+            chineseAudioUrl = audioResult.file_url;
+            this.logger.log(`成功生成中文语音: ${chineseAudioUrl}`);
+          }
+        } catch (error) {
+          this.logger.warn(
+            `为单词 "${wordDetail.word}" 生成中文语音失败: ${error.message}`,
+          );
+          // 继续处理，不阻断流程
+        }
         const dictationWord = this.dictationWordRepository.create({
           dictation_record_id: savedRecord.id,
           word: wordDetail.word,
@@ -83,6 +116,7 @@ export class DictationService {
           related_words: wordDetail.related_words,
           sort_order: i,
           status: DictationWordStatus.PENDING,
+          chinese_audio_url: chineseAudioUrl, // 设置中文语音URL
         });
         await this.dictationWordRepository.save(dictationWord);
       }
@@ -247,6 +281,7 @@ export class DictationService {
     const responseRecords: DictationRecordResponseDto[] = records.map(
       (record) => ({
         id: record.id,
+        cover_url: record.cover_url,
         name: record.name,
         description: record.description,
         status: record.status,
