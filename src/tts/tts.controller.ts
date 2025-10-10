@@ -44,8 +44,8 @@ import {
   BatchTtsResponseDto,
 } from './dto/tts-response.dto';
 import {
-  BatchTtsRequestDto as StorageBatchTtsRequestDto,
-  BatchTtsResponseDto as StorageBatchTtsResponseDto,
+  StorageBatchTtsRequestDto,
+  StorageBatchTtsResponseDto,
   TtsQueryDto,
   TtsRecordDetailDto,
 } from './dto/batch-tts.dto';

@@ -21,7 +21,7 @@ import {
 import { Transform, Type } from 'class-transformer';
 import { AudioType } from '../entities/tts-audio.entity';
 
-export class BatchTtsRequestDto {
+export class StorageBatchTtsRequestDto {
   @ApiProperty({
     description: '文本列表',
     example: ['hello', 'world', 'TTS test'],
@@ -129,7 +129,7 @@ export class TtsAudioInfoDto {
   is_new: boolean;
 }
 
-export class BatchTtsResponseDto {
+export class StorageBatchTtsResponseDto {
   @ApiProperty({ description: '成功生成的音频数量' })
   success_count: number;
 

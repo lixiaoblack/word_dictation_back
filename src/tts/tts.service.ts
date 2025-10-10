@@ -27,8 +27,8 @@ import {
 } from './entities/tts-audio.entity';
 import { OssService } from '../common/services/oss.service';
 import {
-  BatchTtsRequestDto,
-  BatchTtsResponseDto,
+  StorageBatchTtsRequestDto,
+  StorageBatchTtsResponseDto,
   TtsAudioInfoDto,
   TtsQueryDto,
   TtsRecordDetailDto,
@@ -614,9 +614,9 @@ export class TtsService {
    * @param userId 用户ID
    */
   async batchTextToSpeechWithStorage(
-    batchRequest: BatchTtsRequestDto,
+    batchRequest: StorageBatchTtsRequestDto,
     userId?: string,
-  ): Promise<BatchTtsResponseDto> {
+  ): Promise<StorageBatchTtsResponseDto> {
     const startTime = Date.now();
     const results: TtsAudioInfoDto[] = [];
     const failedTexts: string[] = [];

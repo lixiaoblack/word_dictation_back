@@ -2,7 +2,7 @@
  * @Author: wanglx
  * @Date: 2025-09-02 22:24:37
  * @LastEditors: wanglx
- * @LastEditTime: 2025-09-15 14:03:19
+ * @LastEditTime: 2025-10-10 11:09:52
  * @Description:
  *
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved.
@@ -85,6 +85,7 @@ import { extname } from 'path';
         },
       }),
     }),
+    UploadModule,
     ImageRecognitionModule,
     WordsModule,
     DictationModule,
